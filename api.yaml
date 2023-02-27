@@ -1,0 +1,5 @@
+openapi: "3.0.2"
+info:
+    title: "Online Ordering App Coffee"
+    version: "1.0"
+    description: "This is an API for an online ordering app. In this scenario, the 
