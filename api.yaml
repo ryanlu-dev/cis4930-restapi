@@ -1,4 +1,5 @@
 openapi: 3.0.2
+
 info:
     title: Online Ordering App - Coffee Scenario
     version: 1.0
@@ -6,7 +7,9 @@ info:
                  a coffee, deleting their previous payment information, inputting a new one, and the server
                  will verify the transcation with the payment service.
     contact: Ryan Lu, ryan.lu@ufl.edu
+
 paths:
+    
     /items:
         get:
             tags:
@@ -22,6 +25,7 @@ paths:
                                 $ref: '#/items'
                 '404':
                     description: An array of all items could not be found. Server could be down or file could be corrupted?
+    
     /items/{itemName}:
         get:
             tags:
@@ -31,6 +35,15 @@ paths:
             responses:
                 '200':
                     description: A JSON of the item and its customization options is returned
+        patch:
+            tags:
+                - Item
+            summary: Quantity of item is changed
+            description: If an item gets stocked or gets bought, the quantity of the item should be incremented or decremented as appropriate
+            responses:
+                '200':
+                    description: The JSON of the item gets modified after a restock or a purchase
+    
     /users/{userID}:
         get:
             tags:
@@ -47,8 +60,107 @@ paths:
                 - User
             summary: Creates a new user
             description: Creates a new user with a unique ID, relevant attributes, payment info, and cart
+            requestBody:
+                required: true
+                content:
+                    app/json:
+                        schema:
+                            $ref '#/users/{userID}'
             responses:
                 '201':
                     description: A JSON of the user's attributes, payment info, and attached cart is successfully created
                 '409':
-                    description: The user already exists in the system and 
+                    description: The user already exists in the system and cannot be overwritten
+        delete:
+            tags:
+                - User
+            summary: Deletes a user
+            description: Removes the JSON containing a user's unique ID, attributes, payment info, and cart
+            responses:
+                '200':
+                    description: The JSON has been successfully removed
+                '202':
+                    description: The user has requested to soft-delete their account, in which all their preferences would be restored
+                                 if they decide to restore their account. Otherwise, this user account will be queued for deletion in 7 days
+                '404':
+                    description: A user with this ID is not found. Was this request erroneously sent or the user already deleted?
+    
+    /users/{userID}/cart:
+        get:
+            tags:
+                - Cart
+            summary: Returns the user's cart
+            description: Returns the names of the items in the user's cart alongside its saved customizations and quantities
+            responses:
+                '200':
+                    description: A JSON of the user's cart is returned with names, quantities, and customizations. Can be empty
+    
+    /users/{userID}/cart/{itemName}:
+        get:
+            tags:
+                - Item
+                - Cart
+            summary: Returns the specific item in the user's cart
+            description: Returns the specific item in the user's cart, alongside its customzations, quantity, description, etc
+            responses:
+                '200':
+                    description: A JSON of the item is returned with its name, quantity, and customization
+        post:
+            tags:
+                - Item
+                - Cart
+            summary: An item is placed in the user's cart
+            description: Creates a new JSON of the item to be placed in the user's cart, including its customization and quantity
+            requestBody:
+                required: true
+                content:
+                    app/json:
+                        schema:
+                            $ref '#/users/{userID}/cart/{itemName}'
+                responses:
+                    '201':
+                        description: The request has succeeded, a JSON of the item was created and the item was successfully added into the user's cart
+
+    /users/{userID}/paymentInfo:
+        get:
+            tags:
+                - Payment
+            summary: Returns user's payment info
+            description: Returns the user's payment info, including card information, expiration date, CVV. Encrypted
+            responses:
+                '200':
+                    description: The encrypted payment information is returned
+        put:
+            tags:
+                - Payment
+            summary: Inputs and saves user's payment info
+            description: An encrypted file containing the user's payment information is saved
+            responses:
+                '201':
+                    description: The encrypted payment information is successfully created and saved
+        delete:
+            tags:
+                - Payment
+            summary: Deletes payment info
+            description: Deletes the user's previously saved payment information from the server
+            responses:
+                '200':
+                    description: The encrypted payment information file is successfully removed
+                '404':
+                    description: There is no saved payment information for this user. Was this request erroneously sent or the payment already deleted?
+    /paymentVerification:
+        get:
+            tags:
+                - Verification
+            summary: Verifies if payment information is valid
+            description: Returns with a positive code if the payment information is verified with the payment service
+            parameters:
+                - name: paymentInfo
+                  in: /users/{userID}
+                  required: true
+                  description: The payment info to be sent
+                  schema:
+                    type : string
+            responses:
+                '200':
+                    description: The payment information is validated and verified with the payment service
