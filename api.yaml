@@ -1,5 +1,54 @@
-openapi: "3.0.2"
+openapi: 3.0.2
 info:
-    title: "Online Ordering App Coffee"
-    version: "1.0"
-    description: "This is an API for an online ordering app. In this scenario, the 
+    title: Online Ordering App - Coffee Scenario
+    version: 1.0
+    description: This is an API for an online ordering app. In this scenario, the user will be ordering 
+                 a coffee, deleting their previous payment information, inputting a new one, and the server
+                 will verify the transcation with the payment service.
+    contact: Ryan Lu, ryan.lu@ufl.edu
+paths:
+    /items:
+        get:
+            tags:
+                - Items
+            summary: Return all items
+            description: Returns all items that the app can order
+            responses:
+                '200':
+                    description: An array of all items that can be ordered in JSON format with quantity and customization options
+                    content:
+                        app/json:
+                            schema:
+                                $ref: '#/items'
+                '404':
+                    description: An array of all items could not be found. Server could be down or file could be corrupted?
+    /items/{itemName}:
+        get:
+            tags:
+                - Item
+            summary: Returns this specific item
+            description: Returns a particular item that the user can customize
+            responses:
+                '200':
+                    description: A JSON of the item and its customization options is returned
+    /users/{userID}:
+        get:
+            tags:
+                - User
+            summary: Returns the user's relevant info, their attributes, payment info, and their attached cart
+            description: Returns the user's attributes, payment info, and their attached cart
+            responses:
+                '200':
+                    description: A JSON of the user's attributes, payment info, and their attached cart is returned
+                '404':
+                    description: A user with this ID is not found. Was this user deleted or have they never registered before?
+        post:
+            tags:
+                - User
+            summary: Creates a new user
+            description: Creates a new user with a unique ID, relevant attributes, payment info, and cart
+            responses:
+                '201':
+                    description: A JSON of the user's attributes, payment info, and attached cart is successfully created
+                '409':
+                    description: The user already exists in the system and 
